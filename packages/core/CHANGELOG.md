@@ -1,5 +1,29 @@
 # coco-cashu-core
 
+## 1.1.2-rc.47
+
+### Patch Changes
+
+- 980cff1: feat: Added missing util method to QuotesApi (rollback, getPending/getPrepared)
+
+## 1.1.2-rc.46
+
+## 1.1.2-rc.45
+
+### Patch Changes
+
+- 30aa519: Fix: sqlite-bun package was missing from release pipeline. It's included now
+
+## 1.1.2-rc.44
+
+### Patch Changes
+
+- 8bb6f67: Fix: Migrate from deprecated sqlite3 package to better-sqlite3
+
+  Fix: Made sure bootstrap inflight check finalizes send operations when proofs are returned spent.
+
+  WARNING: This is a breaking change for bun environments, as bun currently does not support the better-sqlite3 binding! Bun consumers should use the sqlite-bun adapter instead!!
+
 ## 1.1.2-rc.43
 
 ### Patch Changes

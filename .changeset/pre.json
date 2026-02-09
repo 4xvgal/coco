@@ -8,16 +8,19 @@
     "coco-cashu-indexeddb": "1.0.0-rc.11",
     "coco-cashu-react": "1.1.1",
     "coco-cashu-sqlite3": "1.0.0-rc.11",
-    "coco-cashu-adapter-tests": "1.0.0-rc.16"
+    "coco-cashu-adapter-tests": "1.0.0-rc.16",
+    "coco-cashu-sqlite-bun": "1.1.2-rc.43"
   },
   "changesets": [
     "bumpy-hats-poke",
+    "clear-cycles-slide",
     "common-books-grin",
     "common-humans-relate",
     "cool-clubs-switch",
     "cuddly-hounds-worry",
     "cute-pets-train",
     "cyan-worlds-tell",
+    "dirty-cities-enjoy",
     "dirty-deer-dig",
     "easy-clocks-hide",
     "easy-mice-like",
@@ -34,11 +37,13 @@
     "hungry-buttons-hunt",
     "icy-pets-attack",
     "khaki-mangos-greet",
+    "large-bars-knock",
     "loose-mugs-raise",
     "modern-cups-look",
     "nasty-candies-say",
     "neat-towns-love",
     "olive-numbers-sort",
+    "orange-ways-send",
     "plain-moose-fry",
     "plenty-clowns-divide",
     "polite-buses-open",
@@ -56,6 +61,7 @@
     "two-bushes-watch",
     "two-pugs-create",
     "vast-sheep-arrive",
+    "wise-dogs-warn",
     "yellow-forks-laugh"
   ]
 }

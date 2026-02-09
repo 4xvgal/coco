@@ -199,7 +199,7 @@ run_test() {
         unset VITE_MINT_URL
         unset VITE_TEST_LOG_LEVEL
     else
-        # Standard bun test for non-browser packages
+        # Standard npm test for non-browser packages (uses vitest or bun:test)
         export MINT_URL="$mint_url"
         if [ -n "$log_level" ]; then
             export TEST_LOG_LEVEL="$log_level"
@@ -208,9 +208,9 @@ run_test() {
         fi
         
         if [ -n "$test_pattern" ]; then
-            bun test -t "$test_pattern" "$test_file" || test_result=$?
+            bun run test -- -t "$test_pattern" "$test_file" || test_result=$?
         else
-            bun test "$test_file" || test_result=$?
+            bun run test -- "$test_file" || test_result=$?
         fi
         
         unset MINT_URL
@@ -388,6 +388,10 @@ bun run build
 cd "$PROJECT_ROOT/packages/core"
 bun run build
 
+# Build storage adapters
+cd "$PROJECT_ROOT/packages/sqlite-bun"
+bun run build
+
 # Check if any browser tests will be run and install Playwright if needed
 check_and_install_playwright() {
     local needs_playwright=false
@@ -436,4 +440,3 @@ else
 fi
 
 log_info "All tests completed successfully!"
-

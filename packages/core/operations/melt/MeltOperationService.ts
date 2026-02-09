@@ -694,4 +694,9 @@ export class MeltOperationService {
   async getPendingOperations(): Promise<MeltOperation[]> {
     return this.meltOperationRepository.getPending();
   }
+
+  async getPreparedOperations(): Promise<PreparedMeltOperation[]> {
+    const ops = await this.meltOperationRepository.getByState('prepared');
+    return ops.filter((op): op is PreparedMeltOperation => op.state === 'prepared');
+  }
 }
