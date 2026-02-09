@@ -182,7 +182,7 @@ export class MemoryProofRepository implements ProofRepository {
     return results;
   }
 
-  async getAvailableProofs(mintUrl: string): Promise<CoreProof[]> {
+  async getAvailableProofs(mintUrl: string,): Promise<CoreProof[]> {
     const map = this.getMintMap(mintUrl);
     return Array.from(map.values())
       .filter((p) => p.state === 'ready' && !p.usedByOperationId)

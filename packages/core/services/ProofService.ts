@@ -1,23 +1,22 @@
 import {
   OutputData,
   type Keys,
-  type MintKeys,
   type Proof,
-  type SerializedBlindedSignature,
+  type SerializedBlindedSignature
 } from '@cashu/cashu-ts';
-import type { CoreProof } from '../types';
-import type { CounterService } from './CounterService';
-import type { ProofRepository } from '../repositories';
+import type { Keyset } from '@core/models/Keyset.ts';
 import { EventBus } from '../events/EventBus';
 import type { CoreEvents } from '../events/types';
-import { ProofOperationError, ProofValidationError } from '../models/Error';
-import { WalletService } from './WalletService';
-import type { MintService } from './MintService';
 import type { Logger } from '../logging/Logger.ts';
-import type { SeedService } from './SeedService.ts';
-import type { KeyRingService } from './KeyRingService.ts';
+import { ProofOperationError, ProofValidationError } from '../models/Error';
+import type { ProofRepository } from '../repositories';
+import type { CoreProof } from '../types';
 import { deserializeOutputData, mapProofToCoreProof, type SerializedOutputData } from '../utils';
-import type { Keyset } from '@core/models/Keyset.ts';
+import type { CounterService } from './CounterService';
+import type { KeyRingService } from './KeyRingService.ts';
+import type { MintService } from './MintService';
+import type { SeedService } from './SeedService.ts';
+import { WalletService } from './WalletService';
 
 export class ProofService {
   private readonly counterService: CounterService;
@@ -517,15 +516,8 @@ export class ProofService {
     unit: string = 'sat',
     includeFees: boolean = true,
   ): Promise<Proof[]> {
-    // Try to get proofs by unit if mintService is available
-    let proofs: CoreProof[];
-    try {
-      proofs = await this.getReadyProofsByUnit(mintUrl, unit);
-    } catch {
-      // Fallback to getting all ready proofs if unit-based filtering fails
-      // This maintains backwards compatibility with existing usage
-      proofs = await this.getReadyProofs(mintUrl);
-    }
+    const proofs = await this.getReadyProofsByUnit(mintUrl, unit);
+    
     const totalAmount = proofs.reduce((acc, proof) => acc + proof.amount, 0);
     if (totalAmount < amount) {
       throw new ProofValidationError('Not enough proofs to send');

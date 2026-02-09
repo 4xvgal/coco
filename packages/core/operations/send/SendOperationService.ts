@@ -1,37 +1,37 @@
-import { type Token, type Proof, type ProofState as CashuProofState, type OutputConfig } from '@cashu/cashu-ts';
-import type { SendOperationRepository, ProofRepository } from '../../repositories';
-import type {
-  SendOperation,
-  InitSendOperation,
-  PreparedSendOperation,
-  ExecutingSendOperation,
-  PendingSendOperation,
-  FinalizedSendOperation,
-  RollingBackSendOperation,
-  RolledBackSendOperation,
-  PreparedOrLaterOperation,
-} from './SendOperation';
-import {
-  createSendOperation,
-  hasPreparedData,
-  getSendProofSecrets,
-  getKeepProofSecrets,
-  isTerminalOperation,
-} from './SendOperation';
-import type { MintService } from '../../services/MintService';
-import type { WalletService } from '../../services/WalletService';
-import type { ProofService } from '../../services/ProofService';
+import { type ProofState as CashuProofState, type OutputConfig, type Proof, type Token } from '@cashu/cashu-ts';
 import type { EventBus } from '../../events/EventBus';
 import type { CoreEvents } from '../../events/types';
 import type { Logger } from '../../logging/Logger';
+import { OperationInProgressError, ProofValidationError, UnknownMintError } from '../../models/Error';
+import type { ProofRepository, SendOperationRepository } from '../../repositories';
+import type { MintService } from '../../services/MintService';
+import type { ProofService } from '../../services/ProofService';
+import type { WalletService } from '../../services/WalletService';
 import {
+  deserializeOutputData,
   generateSubId,
+  getSecretsFromSerializedOutputData,
   mapProofToCoreProof,
   serializeOutputData,
-  deserializeOutputData,
-  getSecretsFromSerializedOutputData,
 } from '../../utils';
-import { UnknownMintError, ProofValidationError, OperationInProgressError } from '../../models/Error';
+import type {
+  ExecutingSendOperation,
+  FinalizedSendOperation,
+  InitSendOperation,
+  PendingSendOperation,
+  PreparedOrLaterOperation,
+  PreparedSendOperation,
+  RolledBackSendOperation,
+  RollingBackSendOperation,
+  SendOperation,
+} from './SendOperation';
+import {
+  createSendOperation,
+  getKeepProofSecrets,
+  getSendProofSecrets,
+  hasPreparedData,
+  isTerminalOperation,
+} from './SendOperation';
 
 /**
  * Service that manages send operations as sagas.
@@ -160,7 +160,7 @@ export class SendOperationService {
     const { wallet, keys } = await this.walletService.getWalletWithActiveKeysetId(mintUrl, unit);
 
     // Get available proofs (ready and not reserved by other operations)
-    const availableProofs = await this.proofRepository.getAvailableProofs(mintUrl);
+    const availableProofs = await this.proofRepository.getAvailableProofs(mintUrl, unit);
     const totalAvailable = availableProofs.reduce((acc, p) => acc + p.amount, 0);
 
     if (totalAvailable < amount) {

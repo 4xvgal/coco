@@ -31,6 +31,10 @@ describe('ProofService', () => {
   // Minimal mint service stub
   let mintService: {
     getAllTrustedMints: () => Promise<{ mintUrl: string }[]>;
+    ensureUpdatedMint: (mintUrl: string) => Promise<{
+      mint: { mintUrl: string };
+      keysets: { id: string; unit: string; active: boolean; keypairs: Record<string, string> }[];
+    }>;
   };
 
   // Minimal keyRingService stub
@@ -77,6 +81,12 @@ describe('ProofService', () => {
     mintService = {
       async getAllTrustedMints() {
         return [{ mintUrl }];
+      },
+      async ensureUpdatedMint(_mintUrl: string) {
+        return {
+          mint: { mintUrl },
+          keysets: [{ id: keysetId, unit: 'sat', active: true, keypairs: { 1: 'key1' } }],
+        };
       },
     };
 
@@ -504,8 +514,8 @@ describe('ProofService', () => {
       );
 
       await proofRepo.saveProofs(mintUrl, [
-        makeProof({ secret: 'a1', id: 'k1', amount: 5 }),
-        makeProof({ secret: 'a2', id: 'k1', amount: 10 }),
+        makeProof({ secret: 'a1', id: keysetId, amount: 5 }),
+        makeProof({ secret: 'a2', id: keysetId, amount: 10 }),
       ]);
 
       await expect(service.selectProofsToSend(mintUrl, 100)).rejects.toThrow(ProofValidationError);
@@ -545,9 +555,9 @@ describe('ProofService', () => {
         bus,
       );
 
-      const p1 = makeProof({ secret: 'b1', id: 'k1', amount: 30 });
-      const p2 = makeProof({ secret: 'b2', id: 'k1', amount: 50 });
-      const p3 = makeProof({ secret: 'b3', id: 'k1', amount: 80 });
+      const p1 = makeProof({ secret: 'b1', id: keysetId, amount: 30 });
+      const p2 = makeProof({ secret: 'b2', id: keysetId, amount: 50 });
+      const p3 = makeProof({ secret: 'b3', id: keysetId, amount: 80 });
       await proofRepo.saveProofs(mintUrl, [p1, p2, p3]);
 
       const selected = await service.selectProofsToSend(mintUrl, 60);

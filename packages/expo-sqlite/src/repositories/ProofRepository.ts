@@ -226,10 +226,13 @@ export class ExpoProofRepository implements ProofRepository {
     return rows.map(rowToProof);
   }
 
-  async getAvailableProofs(mintUrl: string): Promise<CoreProof[]> {
+  async getAvailableProofs(mintUrl: string, unit: string): Promise<CoreProof[]> {
     const rows = await this.db.all<ProofRow>(
-      'SELECT mintUrl, id, amount, secret, C, dleqJson, witnessJson, state, usedByOperationId, createdByOperationId FROM coco_cashu_proofs WHERE mintUrl = ? AND state = "ready" AND usedByOperationId IS NULL',
-      [mintUrl],
+      `SELECT p.mintUrl, p.id, p.amount, p.secret, p.C, p.dleqJson, p.witnessJson, p.state, p.usedByOperationId, p.createdByOperationId
+       FROM coco_cashu_proofs p
+       INNER JOIN coco_cashu_keysets k ON p.id = k.id AND p.mintUrl = k.mintUrl
+       WHERE p.mintUrl = ? AND k.unit = ? AND p.state = 'ready' AND p.usedByOperationId IS NULL`,
+      [mintUrl, unit],
     );
     return rows.map(rowToProof);
   }
