@@ -6,6 +6,7 @@ import {
   type MeltQuoteBolt11Response,
   type MeltQuoteBolt12Response,
   type GetKeysetsResponse,
+  type AuthProvider,
 } from '@cashu/cashu-ts';
 import type { MintInfo } from '../types';
 import type { MintRequestProvider } from './MintRequestProvider.ts';
@@ -19,9 +20,22 @@ import type { MintRequestProvider } from './MintRequestProvider.ts';
 export class MintAdapter {
   private cashuMints: Record<string, Mint> = {};
   private readonly requestProvider: MintRequestProvider;
+  private readonly authProviders = new Map<string, AuthProvider>();
 
   constructor(requestProvider: MintRequestProvider) {
     this.requestProvider = requestProvider;
+  }
+
+  /** Register an AuthProvider for a mint (NUT-21/22). Invalidates the cached Mint instance. */
+  setAuthProvider(mintUrl: string, provider: AuthProvider): void {
+    this.authProviders.set(mintUrl, provider);
+    delete this.cashuMints[mintUrl];
+  }
+
+  /** Remove the AuthProvider for a mint. Invalidates the cached Mint instance. */
+  clearAuthProvider(mintUrl: string): void {
+    this.authProviders.delete(mintUrl);
+    delete this.cashuMints[mintUrl];
   }
 
   async fetchMintInfo(mintUrl: string): Promise<MintInfo> {
@@ -46,7 +60,8 @@ export class MintAdapter {
   private getCashuMint(mintUrl: string): Mint {
     if (!this.cashuMints[mintUrl]) {
       const requestFn = this.requestProvider.getRequestFn(mintUrl);
-      this.cashuMints[mintUrl] = new Mint(mintUrl, { customRequest: requestFn });
+      const authProvider = this.authProviders.get(mintUrl);
+      this.cashuMints[mintUrl] = new Mint(mintUrl, { customRequest: requestFn, authProvider });
     }
     return this.cashuMints[mintUrl];
   }

@@ -20,6 +20,7 @@ import {
   KeyRingService,
   TransactionService,
   PaymentRequestService,
+  AuthSessionService,
 } from './services';
 import { SendOperationService } from './operations/send/SendOperationService';
 import { MeltOperationService } from './operations/melt/MeltOperationService';
@@ -34,7 +35,7 @@ import {
 } from './infra';
 import { EventBus, type CoreEvents } from './events';
 import { type Logger, NullLogger } from './logging';
-import { MintApi, WalletApi, QuotesApi, HistoryApi, KeyRingApi, SendApi } from './api';
+import { MintApi, WalletApi, QuotesApi, HistoryApi, KeyRingApi, SendApi, AuthApi } from './api';
 import { SubscriptionApi } from './api/SubscriptionApi.ts';
 import { PluginHost } from './plugins/PluginHost.ts';
 import type { Plugin, ServiceMap, PluginExtensions } from './plugins/types.ts';
@@ -164,6 +165,7 @@ export class Manager {
   readonly subscription: SubscriptionApi;
   readonly history: HistoryApi;
   readonly send: SendApi;
+  readonly auth: AuthApi;
   readonly ext: PluginExtensions;
   private mintService: MintService;
   private walletService: WalletService;
@@ -184,6 +186,7 @@ export class Manager {
   private counterService: CounterService;
   private transactionService: TransactionService;
   private paymentRequestService: PaymentRequestService;
+  private authSessionService: AuthSessionService;
   private sendOperationService: SendOperationService;
   private sendOperationRepository: SendOperationRepository;
   private meltOperationService: MeltOperationService;
@@ -241,6 +244,7 @@ export class Manager {
     this.sendOperationRepository = core.sendOperationRepository;
     this.meltOperationService = core.meltOperationService;
     this.meltOperationRepository = core.meltOperationRepository;
+    this.authSessionService = core.authSessionService;
     this.proofRepository = repositories.proofRepository;
     const apis = this.buildApis();
     this.mint = apis.mint;
@@ -250,6 +254,7 @@ export class Manager {
     this.subscription = apis.subscription;
     this.history = apis.history;
     this.send = apis.send;
+    this.auth = apis.auth;
 
     // Point ext to pluginHost's extensions storage
     this.ext = this.pluginHost.getExtensions() as PluginExtensions;
@@ -549,6 +554,7 @@ export class Manager {
     sendOperationRepository: SendOperationRepository;
     meltOperationService: MeltOperationService;
     meltOperationRepository: MeltOperationRepository;
+    authSessionService: AuthSessionService;
   } {
     const mintLogger = this.getChildLogger('MintService');
     const walletLogger = this.getChildLogger('WalletService');
@@ -672,6 +678,13 @@ export class Manager {
       paymentRequestLogger,
     );
 
+    const authSessionLogger = this.getChildLogger('AuthSessionService');
+    const authSessionService = new AuthSessionService(
+      repositories.authSessionRepository,
+      authSessionLogger,
+      this.eventBus,
+    );
+
     return {
       mintService,
       seedService,
@@ -690,6 +703,7 @@ export class Manager {
       sendOperationRepository,
       meltOperationService,
       meltOperationRepository,
+      authSessionService,
     };
   }
 
@@ -701,6 +715,7 @@ export class Manager {
     subscription: SubscriptionApi;
     history: HistoryApi;
     send: SendApi;
+    auth: AuthApi;
   } {
     const walletApiLogger = this.getChildLogger('WalletApi');
     const subscriptionApiLogger = this.getChildLogger('SubscriptionApi');
@@ -724,6 +739,8 @@ export class Manager {
     const subscription = new SubscriptionApi(this.subscriptions, subscriptionApiLogger);
     const history = new HistoryApi(this.historyService);
     const send = new SendApi(this.sendOperationService);
-    return { mint, wallet, quotes, keyring, subscription, history, send };
+    const authApiLogger = this.getChildLogger('AuthApi');
+    const auth = new AuthApi(this.authSessionService, this.mintAdapter, authApiLogger);
+    return { mint, wallet, quotes, keyring, subscription, history, send, auth };
   }
 }
