@@ -1,14 +1,15 @@
-import { describe, it, beforeEach, afterEach, expect, mock } from 'bun:test';
+import { OutputData } from '@cashu/cashu-ts';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { EventBus } from '../../events/EventBus.ts';
 import type { CoreEvents } from '../../events/types.ts';
-import { ProofService } from '../../services/ProofService.ts';
-import { MemoryProofRepository } from '../../repositories/memory/MemoryProofRepository.ts';
-import { MemoryCounterRepository } from '../../repositories/memory/MemoryCounterRepository.ts';
-import { CounterService } from '../../services/CounterService.ts';
-import { SeedService } from '../../services/SeedService.ts';
 import { ProofOperationError, ProofValidationError } from '../../models/Error.ts';
+import { MemoryCounterRepository } from '../../repositories/memory/MemoryCounterRepository.ts';
+import { MemoryKeysetRepository } from '../../repositories/memory/MemoryKeysetRepository';
+import { MemoryProofRepository } from '../../repositories/memory/MemoryProofRepository.ts';
+import { CounterService } from '../../services/CounterService.ts';
+import { ProofService } from '../../services/ProofService.ts';
+import { SeedService } from '../../services/SeedService.ts';
 import type { CoreProof } from '../../types.ts';
-import { OutputData } from '@cashu/cashu-ts';
 
 describe('ProofService', () => {
   const mintUrl = 'https://mint.test';
@@ -58,7 +59,7 @@ describe('ProofService', () => {
   let originalCreateDeterministicData: typeof OutputData.createDeterministicData;
 
   beforeEach(() => {
-    proofRepo = new MemoryProofRepository();
+    proofRepo = new MemoryProofRepository(new MemoryKeysetRepository());
     counterRepo = new MemoryCounterRepository();
     bus = new EventBus<CoreEvents>();
     counterService = new CounterService(counterRepo, undefined, bus);

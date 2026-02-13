@@ -118,7 +118,7 @@ export class SqliteProofRepository implements ProofRepository {
     if (!keysetIds || keysetIds.length === 0) return [];
     const placeholders = keysetIds.map(() => '?').join(', ');
     const rows = await this.db.all<ProofRow>(
-      `SELECT mintUrl, id, amount, secret, C, dleqJson, witnessJson, state, usedByOperationId, createdByOperationId FROM coco_cashu_proofs WHERE mintUrl = ? AND id IN (${placeholders}) AND state = "ready"`,
+      `SELECT mintUrl, id, amount, secret, C, dleqJson, witnessJson, state, usedByOperationId, createdByOperationId FROM coco_cashu_proofs WHERE mintUrl = ? AND id IN (${placeholders}) AND state = 'ready'`,
       [mintUrl, ...keysetIds],
     );
     return rows.map(rowToProof);

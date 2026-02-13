@@ -1,6 +1,6 @@
 import type {
-  SendOperationRepository,
   SendOperation,
+  SendOperationRepository,
   SendOperationState,
 } from 'coco-cashu-core';
 import { ExpoSqliteDb, getUnixTimeSeconds } from '../db.ts';
@@ -120,8 +120,8 @@ export class ExpoSendOperationRepository implements SendOperationRepository {
     const params = operationToParams(operation);
     await this.db.run(
       `INSERT INTO coco_cashu_send_operations 
-        (id, mintUrl, amount, state, createdAt, updatedAt, error, needsSwap, fee, inputAmount, inputProofSecretsJson, outputDataJson)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, mintUrl, unit, amount, state, createdAt, updatedAt, error, needsSwap, fee, inputAmount, inputProofSecretsJson, outputDataJson)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       params,
     );
   }
