@@ -178,7 +178,7 @@ describe('AuthManager automatic topUp', () => {
     const mintCalls = mockMint.calls.filter((c) => c.endpoint.includes('/v1/auth/blind/mint'));
     expect(mintCalls).toHaveLength(1);
     // Should have requested desiredPoolSize (3) tokens
-    expect(mintCalls[0].body.outputs).toHaveLength(3);
+    expect(mintCalls[0]!.body.outputs).toHaveLength(3);
   });
 
   it('does NOT trigger topUp when pool already has tokens', async () => {
@@ -244,7 +244,7 @@ describe('AuthManager automatic topUp', () => {
       c.endpoint.includes('/v1/auth/blind/mint'),
     );
     expect(mintCalls).toHaveLength(1);
-    expect(mintCalls[0].body.outputs).toHaveLength(2);
+    expect(mintCalls[0]!.body.outputs).toHaveLength(2);
 
     // 2 minted - 1 consumed = 1 remaining
     expect(limitedAuth.poolSize).toBe(1);

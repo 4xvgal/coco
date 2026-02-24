@@ -28,7 +28,7 @@ export interface AuthProof {
   id: string;
   secret: string;
   C: string;
-  dleq?: { e: string; s: string; r: string };
+  dleq?: { e: string; s: string; r?: string };
 }
 
 export interface CheckBlindAuthStateRequest {
@@ -57,6 +57,10 @@ export interface SpendBlindAuthResponse {
 /** Strip amount/witness from a BAT Proof to produce the cdk AuthProof wire format. */
 export function toAuthProof(proof: Proof): AuthProof {
   const ap: AuthProof = { id: proof.id, secret: proof.secret, C: proof.C };
-  if (proof.dleq) ap.dleq = { e: proof.dleq.e, s: proof.dleq.s, r: proof.dleq.r };
+  if (proof.dleq) {
+    const dleq: AuthProof['dleq'] = { e: proof.dleq.e, s: proof.dleq.s };
+    if (proof.dleq.r) dleq!.r = proof.dleq.r;
+    ap.dleq = dleq;
+  }
   return ap;
 }

@@ -84,7 +84,7 @@ describe('AuthApi', () => {
       const calls = (authSessionService.saveSession as ReturnType<typeof mock>).mock.calls;
       expect(calls).toHaveLength(1);
       // 3rd arg is batPool — empty pool yields undefined
-      expect(calls[0][2]).toBeUndefined();
+      expect(calls[0]![2]).toBeUndefined();
     });
   });
 
@@ -164,7 +164,7 @@ describe('AuthApi', () => {
 
       const provider = testApi.getAuthProvider(mintUrl);
       expect(provider).toBeDefined();
-      expect(provider!.poolSize).toBe(1);
+      expect((provider as any).poolSize).toBe(1);
     });
 
     it('handles restore gracefully when session has no batPool', async () => {
@@ -173,7 +173,7 @@ describe('AuthApi', () => {
 
       const provider = api.getAuthProvider(mintUrl);
       expect(provider).toBeDefined();
-      expect(provider!.poolSize).toBe(0);
+      expect((provider as any).poolSize).toBe(0);
     });
   });
 
@@ -202,8 +202,8 @@ describe('AuthApi', () => {
 
       const calls = (mintAdapter.checkBlindAuthState as ReturnType<typeof mock>).mock.calls;
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toBe(normalizedUrl);
-      const payload = calls[0][1];
+      expect(calls[0]![0]).toBe(normalizedUrl);
+      const payload = calls[0]![1];
       // dleq should have e, s, r (amount/witness stripped)
       expect(payload).toEqual({
         auth_proofs: [
@@ -217,7 +217,7 @@ describe('AuthApi', () => {
       await api.checkBlindAuthState('https://mint.test/', []);
 
       const calls = (mintAdapter.checkBlindAuthState as ReturnType<typeof mock>).mock.calls;
-      expect(calls[0][0]).toBe(normalizedUrl);
+      expect(calls[0]![0]).toBe(normalizedUrl);
     });
   });
 
@@ -229,8 +229,8 @@ describe('AuthApi', () => {
 
       const calls = (mintAdapter.spendBlindAuth as ReturnType<typeof mock>).mock.calls;
       expect(calls).toHaveLength(1);
-      expect(calls[0][0]).toBe(normalizedUrl);
-      expect(calls[0][1]).toEqual({
+      expect(calls[0]![0]).toBe(normalizedUrl);
+      expect(calls[0]![1]).toEqual({
         auth_proof: { id: 'k1', secret: 's1', C: 'C1' },
       });
       expect(result).toEqual({ state: { Y: 'y1', state: 'SPENT' } });

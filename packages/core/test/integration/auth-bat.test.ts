@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, setDefaultTimeout } from 'bun:test';
+import { AuthManager } from '@cashu/cashu-ts';
+import { initializeCoco, type Manager } from '../../Manager';
 
 setDefaultTimeout(300_000); // 5 min – manual browser authorization needed
-import { initializeCoco, type Manager } from '../../Manager';
 import { MemoryRepositories } from '../../repositories/memory';
 
 const mintUrl = process.env.MINT_URL;
@@ -63,9 +64,9 @@ describe('Auth Integration (CAT + BAT)', () => {
   // ---------------------------------------------------------------------------
 
   it('T1: CAT-protected endpoint succeeds without consuming BATs', async () => {
-    const provider = mgr.auth.getAuthProvider(mintUrl);
+    const provider = mgr.auth.getAuthProvider(mintUrl) as AuthManager;
     expect(provider).toBeDefined();
-    expect(provider!.poolSize).toBe(0);
+    expect(provider.poolSize).toBe(0);
 
     // get_mint_quote = Clear → uses CAT header, no BAT needed
     const quote = await mgr.quotes.createMintQuote(mintUrl, 1);
@@ -73,7 +74,7 @@ describe('Auth Integration (CAT + BAT)', () => {
     expect(quote.quote).toBeDefined();
 
     // Pool stays empty — CAT auth does not touch BATs
-    expect(provider!.poolSize).toBe(0);
+    expect(provider.poolSize).toBe(0);
   });
 
   // ---------------------------------------------------------------------------
@@ -81,13 +82,13 @@ describe('Auth Integration (CAT + BAT)', () => {
   // ---------------------------------------------------------------------------
 
   it('T2: ensure() mints BATs via CAT and populates pool', async () => {
-    const provider = mgr.auth.getAuthProvider(mintUrl);
+    const provider = mgr.auth.getAuthProvider(mintUrl) as AuthManager;
     expect(provider).toBeDefined();
-    expect(provider!.poolSize).toBe(0);
+    expect(provider.poolSize).toBe(0);
 
     // Explicitly mint BATs (uses CAT to call /v1/auth/blind/mint)
-    await provider!.ensure!(3);
-    expect(provider!.poolSize).toBeGreaterThanOrEqual(3);
+    await provider.ensure!(3);
+    expect(provider.poolSize).toBeGreaterThanOrEqual(3);
   });
 
   it('T3: session restore → CAT works, BAT re-mintable', async () => {
@@ -108,7 +109,7 @@ describe('Auth Integration (CAT + BAT)', () => {
     const restored = await mgr2.auth.restore(mintUrl);
     expect(restored).toBe(true);
 
-    const provider2 = mgr2.auth.getAuthProvider(mintUrl);
+    const provider2 = mgr2.auth.getAuthProvider(mintUrl) as AuthManager;
     expect(provider2).toBeDefined();
 
     // CAT works after restore — createMintQuote (Clear-protected)
@@ -117,8 +118,8 @@ describe('Auth Integration (CAT + BAT)', () => {
     expect(quote.quote).toBeDefined();
 
     // BAT re-mintable after restore — ensure() uses restored CAT
-    await provider2!.ensure!(2);
-    expect(provider2!.poolSize).toBeGreaterThanOrEqual(2);
+    await provider2.ensure!(2);
+    expect(provider2.poolSize).toBeGreaterThanOrEqual(2);
   });
 
   // ---------------------------------------------------------------------------
@@ -126,15 +127,15 @@ describe('Auth Integration (CAT + BAT)', () => {
   // ---------------------------------------------------------------------------
 
   it('T4: flush pool, re-issue, checkBlindAuthState all UNSPENT, spend one, verify SPENT', async () => {
-    const provider = mgr.auth.getAuthProvider(mintUrl);
+    const provider = mgr.auth.getAuthProvider(mintUrl) as AuthManager;
     expect(provider).toBeDefined();
 
     // Flush stale BATs and issue fresh ones
-    provider!.importPool([], 'replace');
-    expect(provider!.poolSize).toBe(0);
+    provider.importPool([], 'replace');
+    expect(provider.poolSize).toBe(0);
 
-    await provider!.ensure!(3);
-    const pool = provider!.exportPool();
+    await provider.ensure!(3);
+    const pool = provider.exportPool();
     expect(pool.length).toBeGreaterThanOrEqual(3);
 
     // All fresh BATs should be UNSPENT
@@ -146,17 +147,17 @@ describe('Auth Integration (CAT + BAT)', () => {
     }
 
     // Pool unchanged after read-only checkstate
-    expect(provider!.exportPool().length).toBe(pool.length);
+    expect(provider.exportPool().length).toBe(pool.length);
 
     // Spend one BAT
-    const target = pool[0];
+    const target = pool[0]!;
     const spendResult = await mgr.auth.spendBlindAuth(mintUrl, target);
     expect(spendResult.state).toBeDefined();
     expect(spendResult.state.state).toBe('SPENT');
 
     // Verify it's SPENT, others still UNSPENT
     const recheck = await mgr.auth.checkBlindAuthState(mintUrl, pool);
-    const targetState = recheck.states[0];
+    const targetState = recheck.states[0]!;
     expect(targetState.state).toBe('SPENT');
 
     const rest = recheck.states.slice(1);
