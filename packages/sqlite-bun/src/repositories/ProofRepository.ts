@@ -1,4 +1,4 @@
-import type { ProofRepository, CoreProof, ProofState } from '@cashu/coco-core';
+import type { CoreProof, ProofRepository, ProofState } from '@cashu/coco-core';
 import { SqliteDb, getUnixTimeSeconds } from '../db.ts';
 
 interface ProofRow {
@@ -57,7 +57,7 @@ export class SqliteProofRepository implements ProofRepository {
         'INSERT INTO coco_cashu_proofs (mintUrl, id, amount, secret, C, dleqJson, witnessJson, state, createdAt, usedByOperationId, createdByOperationId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
       for (const p of proofs) {
         const dleqJson = p.dleq ? JSON.stringify(p.dleq) : null;
-        const witnessJson = p.witness ? JSON.stringify(p.witness) : null;
+        const witnessJson = p.witness ? (typeof p.witness === 'string' ? p.witness : JSON.stringify(p.witness)) : null;
         await tx.run(insertSql, [
           mintUrl,
           p.id,
